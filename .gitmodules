@@ -1,0 +1,3 @@
+[submodule "wiring/extruder_ctrl_circuits"]
+	path = wiring/extruder_ctrl_circuits
+	url = git@github.com:biodigitalmatter/extruder_ctrl_circuits
