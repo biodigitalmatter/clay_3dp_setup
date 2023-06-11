@@ -377,7 +377,7 @@
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
       "pin_not_driven": "error",
-      "pin_to_pin": "warning",
+      "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "similar_labels": "warning",
       "simulation_model_issue": "error",
@@ -493,5 +493,11 @@
       "lth2400_robban_io_wiring"
     ]
   ],
-  "text_variables": {}
+  "text_variables": {
+    "company": "bioDigital Matter Lab - Lund University",
+    "drawn_by": "Anton Tetov",
+    "git_describe": "v0.0.0-0-gxxxxxxx",
+    "git_url": "https://github.com/biodigitalmatter/clay_3dp_setup",
+    "project_title": "Clay 3DP setup"
+  }
 }
