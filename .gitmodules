@@ -1,6 +1,3 @@
-[submodule "wiring/extruder_ctrl_circuits"]
-	path = wiring/extruder_ctrl_circuits
-	url = git@github.com:biodigitalmatter/extruder_ctrl_circuits
 [submodule "wiring/lth2400_robban_io_wiring"]
 	path = wiring/lth2400_robban_io_wiring
 	url = git@gitlab.control.lth.se:robotlab/lth2400_robban_io_wiring.git

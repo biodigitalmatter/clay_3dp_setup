@@ -389,7 +389,9 @@
   },
   "libraries": {
     "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_symbol_libs": [
+      "clay_3dp_wiring"
+    ]
   },
   "meta": {
     "filename": "clay_3dp_wiring.kicad_pro",
@@ -471,22 +473,6 @@
     [
       "1aafabe6-4a1f-46bf-9f81-c940a24627ea",
       ""
-    ],
-    [
-      "14f65769-aed9-4f66-8c4a-d110fa3588aa",
-      "24V_plc_integration_shield"
-    ],
-    [
-      "15acb311-fc6d-4dca-ab5d-737ef8928bc0",
-      "power"
-    ],
-    [
-      "00000000-0000-0000-0000-0000617fd833",
-      "24V signal  to 5V-2"
-    ],
-    [
-      "00000000-0000-0000-0000-00006186bf69",
-      "24V signal to 5V-1"
     ],
     [
       "570b6376-3bc9-4cd0-a611-065bdb655b24",
