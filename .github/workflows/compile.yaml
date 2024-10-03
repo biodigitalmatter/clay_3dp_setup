@@ -1,9 +1,24 @@
 on: [push, pull_request]
 jobs:
+  strategy:
+    matrix:
+      sketch_dir:
+        - "firmware/erratic"
+        - "firmware/lutum"
   compile:
     runs-on: ubuntu-latest
+      sketch_dir:
+      - firmware/lutum
+      - firmware/erratic
     steps:
       - uses: actions/checkout@v4
-      - uses: arduino/compile-sketches@v1
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+      - name: Compile sketch ${{matrix.sketch_dir}}
+        run: arduino-cli compile
+        working-directory: ${{matrix.sketch_dir}}
+      - name: Lint sketch ${{matrix.sketch_dir}}
+        uses: arduino/arduino-lint-action@v1        
         with:
-          sketch-paths: " - firmware"
+          path: ${{matrix.sketch_dir}}
+
