@@ -1,6 +1,6 @@
 on: [push, pull_request]
 jobs:
-  compile:
+  compile_lint:
     strategy:
       matrix:
         sketch_dir:
