@@ -1,15 +1,12 @@
 on: [push, pull_request]
 jobs:
-  strategy:
-    matrix:
-      sketch_dir:
-        - "firmware/erratic"
-        - "firmware/lutum"
   compile:
+    strategy:
+      matrix:
+        sketch_dir:
+          - "firmware/erratic"
+          - "firmware/lutum"
     runs-on: ubuntu-latest
-      sketch_dir:
-      - firmware/lutum
-      - firmware/erratic
     steps:
       - uses: actions/checkout@v4
       - name: Install Arduino CLI
