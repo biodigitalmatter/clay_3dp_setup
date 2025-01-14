@@ -4,7 +4,7 @@ jobs:
     strategy:
       matrix:
         sketch_dir:
-          - "firmware/erratic"
+          - "firmware/erratic_TS25"
           - "firmware/lutum"
     runs-on: ubuntu-latest
     steps:
