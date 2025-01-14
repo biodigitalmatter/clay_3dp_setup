@@ -35,3 +35,6 @@ fp-info-cache
 
 # arduino IDE
 .theia/
+
+# vscode
+.vscode/
