@@ -1,36 +1,68 @@
-MODULE bdm_spd2DO
-    VAR num n_raw_spd_val;
-    VAR byte n_spd_val;
-
-
+MODULE tx_spd
     CONST num n_min_speed:=0;
     VAR num n_max_speed:=0.250;
 
     CONST num n_min_byte:=0;
     CONST num n_max_byte:=15;
 
+    VAR signalgo go_TCPSpd;
+    VAR signaldo do_extruderFwd;
+    VAR signaldo do_extruderBwd;
+
+    VAR bool b_extrudeRelSpeed;
+    VAR bool b_forceExtrude;
+    VAR bool b_forceRetract;
+
     PROC main()
+
+        AliasIO Local_IO_0_GO1,go_TCPSpd;
+
+        AliasIO LOCAL_IO_0_DO7,do_extruderFwd;
+        AliasIO LOCAL_IO_0_DO8,do_extruderBwd;
 
         IF OpMode()=OP_AUTO OR OpMode()=OP_MAN_TEST THEN
             n_max_speed:=3.000;
         ENDIF
 
         WHILE TRUE DO
-            n_raw_spd_val:=AOutput(ao_TCPSpd);
+            b_forceExtrude:=DOutput(do_forceExtrude)=1;
+            b_forceRetract:=DOutput(do_forceRetract)=1;
+            b_extrudeRelSpeed:=DOutput(do_extrudeRelSpd)=1;
 
-            IF DOutput(do_MOn)=1 AND DOutput(do_extrudeRelSpd)=1 AND n_raw_spd_val>0 THEN
-                n_spd_val:=Round(ScaleValue(n_raw_spd_val,
-                    n_min_speed,
-                    n_max_speed,
-                    n_min_byte+1,
-                    n_max_byte));
-                ! Plus one to n_min_byte since we dont want to round to zero
+            IF NOT (b_forceExtrude OR b_forceRetract OR b_extrudeRelSpeed) THEN
+                SetDO do_extruderBwd,0;
+                SetDO do_extruderFwd,0;
+                SetGO go_TCPSpd,0;
+
+            ELSEIF (b_forceExtrude AND b_forceRetract) OR (b_forceExtrude AND b_extrudeRelSpeed) OR (b_forceRetract AND b_extrudeRelSpeed) THEN
+                SetDO do_extruderBwd,0;
+                SetDO do_extruderFwd,0;
+                SetGO go_TCPSpd,0;
+
+            ELSEIF b_forceExtrude THEN
+                SetDO do_extruderBwd,0;
+                SetDO do_extruderFwd,1;
+                SetGO go_TCPSpd,n_max_byte;
+
+            ELSEIF b_forceRetract THEN
+                SetDO do_extruderBwd,1;
+                SetDO do_extruderFwd,0;
+                SetGO go_TCPSpd,n_max_byte;
 
             ELSE
-                n_spd_val:=0;
-            ENDIF
+                ! last case: b_extrudeRelSpeed = TRUE
 
-            SetGO go_TCPSpd,n_spd_val;
+                ! only run if robot is
+                SetDO do_extruderFwd,DOutput(do_MOn);
+                SetDO do_extruderBwd,0;
+
+                SetGO go_TCPSpd,Round(ScaleValue(AOutput(ao_TCPSpd),
+                        n_min_speed,
+                        n_max_speed,
+                        n_min_byte,
+                        n_max_byte));
+
+            ENDIF
         ENDWHILE
     ENDPROC
 
