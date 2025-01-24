@@ -10,20 +10,24 @@ Copy module `tx_spd.mod`.
 
 Under `Configuration - I/O System`
 
+Assumptions: Digital output signals availble (2 used) and one group output with 8 bits.
+
+These are mapped in `tx_spd.mod` using `AliasIO`.
+
 ### Digital out
 
-- `do_extrudeRelSpd` (assigned)
-- `do_forceExtrude` (assigned)
-- `do_forceRetract` (assigned)
-- `do_MOn` (internal)
+Not assigned to IO device.
 
-### Group signal out
-
-- `go_TCPSpd` (8 bits, assign to device and setup mapping)
+- `do_extrudeRelSpd`
+- `do_forceExtrude`
+- `do_forceRetract`
+- `do_MOn`
 
 ### Analog out
 
-- ao_TCPSpd
+Not assigned to IO device.
+
+- `ao_TCPSpd`
 
 ## System Output
 
