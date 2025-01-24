@@ -1,4 +1,12 @@
-on: [push, pull_request]
+on: 
+  push:
+    paths:
+      - 'firmware/**/*'
+      - '!firmware/**/*.md'
+  pull_request:
+    paths:
+      - 'firmware/**/*'
+      - '!firmware/**/*.md'
 jobs:
   compile_lint:
     strategy:
