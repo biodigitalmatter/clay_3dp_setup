@@ -32,9 +32,3 @@ fp-info-cache
 **/*-backups/*.zip
 
 \#auto_saved_files\#
-
-# arduino IDE
-.theia/
-
-# vscode
-.vscode/
