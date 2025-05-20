@@ -1,82 +1,63 @@
 MODULE tx_spd
-    CONST num n_min_speed:=0;
-    VAR num n_max_speed:=0.250;
+    CONST num SPD_COEFFICIENT:=500;
 
-    CONST num n_min_byte:=0;
-    CONST num n_max_byte:=15;
+    CONST num BYTE_SPD_MAX:=127;
+    CONST num BYTE_ABS_MAX:=255;
 
     VAR signalgo go_TCPSpd;
-    VAR signaldo do_extruderFwd;
-    VAR signaldo do_extruderBwd;
-
-    VAR bool b_extrudeRelSpeed;
-    VAR bool b_forceExtrude;
-    VAR bool b_forceRetract;
+    VAR num spd;
 
     PROC main()
-
+        ! Requires:
+        ! - System output TCPSpeed as analog out: ao_TCPSpeed (in meters/s, default)
+        ! - Real group output go_TCPSpeed (change this using the AliasIO below if needed)
+        ! - Virtual DO: do_forceExtrude
+        ! - Virtual DO: do_forceRetract
+        ! - Virtual AO: ao_flowFactor (0.0 - 1.0)
+        ! - Virtual AO: ao_printPtSpd (-1.0 - +1.0)
+        !
+        !   When ao_printPtSpd is non-zero, extrusion is active and multiplied by TCP speed and flow factor
         AliasIO Local_IO_0_GO1,go_TCPSpd;
 
-        AliasIO LOCAL_IO_0_DO7,do_extruderFwd;
-        AliasIO LOCAL_IO_0_DO8,do_extruderBwd;
-
-        IF OpMode()=OP_AUTO OR OpMode()=OP_MAN_TEST THEN
-            n_max_speed:=3.000;
-        ENDIF
-
         WHILE TRUE DO
-            b_forceExtrude:=DOutput(do_forceExtrude)=1;
-            b_forceRetract:=DOutput(do_forceRetract)=1;
-            b_extrudeRelSpeed:=DOutput(do_extrudeRelSpd)=1;
+            IF do_forceExtrude=1 AND do_forceRetract=0 THEN
+                ! Force extrude at maximum speed
+                spd:=BYTE_SPD_MAX;
 
-            IF NOT (b_forceExtrude OR b_forceRetract OR b_extrudeRelSpeed) THEN
-                SetDO do_extruderBwd,0;
-                SetDO do_extruderFwd,0;
-                SetGO go_TCPSpd,0;
+            ELSEIF do_forceRetract=1 AND do_forceExtrude=0 THEN
+                ! Force retract at maximum speed
+                spd:=-BYTE_SPD_MAX;
 
-            ELSEIF (b_forceExtrude AND b_forceRetract) OR (b_forceExtrude AND b_extrudeRelSpeed) OR (b_forceRetract AND b_extrudeRelSpeed) THEN
-                SetDO do_extruderBwd,0;
-                SetDO do_extruderFwd,0;
-                SetGO go_TCPSpd,0;
-
-            ELSEIF b_forceExtrude THEN
-                SetDO do_extruderBwd,0;
-                SetDO do_extruderFwd,1;
-                SetGO go_TCPSpd,n_max_byte;
-
-            ELSEIF b_forceRetract THEN
-                SetDO do_extruderBwd,1;
-                SetDO do_extruderFwd,0;
-                SetGO go_TCPSpd,n_max_byte;
+            ELSEIF do_forceExtrude=0 AND do_forceRetract=0 AND Abs(AOutput(ao_printPtSpd))>0.001 THEN
+                ! Normal operation: use TCP speed and print point speed
+                spd:=AOutput(ao_TCPSpd)*AOutput(ao_printPtSpd)*SPD_COEFFICIENT;
 
             ELSE
-                ! last case: b_extrudeRelSpeed = TRUE
-
-                ! only run if robot is
-                SetDO do_extruderFwd,DOutput(do_MOn);
-                SetDO do_extruderBwd,0;
-
-                SetGO go_TCPSpd,Round(ScaleValue(AOutput(ao_TCPSpd),
-                        n_min_speed,
-                        n_max_speed,
-                        n_min_byte,
-                        n_max_byte));
-
+                ! All other cases (including conflicting commands): stop
+                spd:=0;
             ENDIF
+
+            spd:=spd*AOutput(ao_flowFactor);
+
+            IF spd>BYTE_SPD_MAX THEN
+                spd:=BYTE_SPD_MAX;
+            ELSEIF spd<-BYTE_SPD_MAX THEN
+                spd:=-BYTE_SPD_MAX;
+            ENDIF
+
+            SetGO go_TCPSpd,SignedSpeedToUnsigned(spd);
+
         ENDWHILE
     ENDPROC
 
-    FUNC num ScaleValue(num input_value,num input_min,num input_max,num output_min,num output_max)
-        VAR num result;
-        result:=((input_value-input_min)/(input_max-input_min))*(output_max-output_min)+output_min;
-        RETURN result;
+    FUNC num SignedSpeedToUnsigned(num spd_val)
+        IF spd_val<0 THEN
+            ! Negative speed (-127 to -1) -> (129 to 255)
+            ! Since speed is negative, this is 256 - |speed|
+            spd_val:=BYTE_ABS_MAX+1+spd_val;
+        ENDIF
+
+        RETURN Trunc(spd_val);
     ENDFUNC
 
-    FUNC dionum BoolToDionum(bool value)
-        VAR dionum result;
-        IF value THEN
-            RETURN 1;
-        ENDIF
-        RETURN 0;
-    ENDFUNC
 ENDMODULE
